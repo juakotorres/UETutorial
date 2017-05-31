@@ -1,5 +1,14 @@
+# Unreal Generated Files
+*/Intermediate
+*/Binaries
+*/Build
+*/Saved
+*/DerivedDataCache
+BuildingEscape/Content/StarterContent
+
 # Visual Studio 2015 user specific files
-.vs/
+*/.vs/
+*.db
 
 # Compiled Object files
 *.slo
