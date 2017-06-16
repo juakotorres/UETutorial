@@ -17,10 +17,27 @@ public:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	void OpenDoor();
+	void CloseDoor();
 	
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
-		
+	
+private:
+	UPROPERTY(EditAnywhere)
+	float OpenAngle = -90.0f;
+
+	UPROPERTY(EditAnywhere)
+    ATriggerVolume *PressurePlate; 
+
+	UPROPERTY(EditAnywhere)
+	float DoorCloseDelay = 1.0f;
+
+	float LastDoorOpenTime;
+
+	AActor *Actorthatopens; // Pawn inherits from Actor.	
+	AActor *Owner; // The owning door.
 	
 };
