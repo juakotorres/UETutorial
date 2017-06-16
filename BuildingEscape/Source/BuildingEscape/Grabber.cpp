@@ -59,16 +59,28 @@ void UGrabber::Grab() {
 	UE_LOG(LogTemp, Warning, TEXT("Grabbing"));
 
 	/// Line trace  and see if we reach any actors with physics body collision channel set.
-	GetFirstPhysicsBodyInReach();
+	auto hitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = hitResult.GetComponent();
+	auto ActorHit = hitResult.GetActor();
 
 	/// If we hit something then attached a physics handle.
-	// TODO attach physics handle
+	if (ActorHit) {
+		// attach physics handle.
+		PhysicsHandle->GrabComponent(
+			ComponentToGrab,
+			NAME_None,
+			ComponentToGrab->GetOwner()->GetActorLocation(),
+			true // allow rotation
+		);
+	}
+
 }
 
 void UGrabber::Release() {
 	UE_LOG(LogTemp, Warning, TEXT("Released"));
 
-	// TODO release physics handle.
+	// release physics handle.
+	PhysicsHandle->ReleaseComponent();
 }
 
 // Called every frame
@@ -76,8 +88,21 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
-	// if the physics handle is attached
-		// then move the object that we're holding
+	/// Get the player viewpoint this tick
+	FVector playerViewPointLocation;
+	FRotator playerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT playerViewPointLocation,
+		OUT playerViewPointRotation
+	);
+
+	FVector LineTraceEnd = playerViewPointLocation + playerViewPointRotation.Vector() * Reach;
+
+	// physics handle is attached
+	if (PhysicsHandle->GrabbedComponent) {
+		// move the object that we're holding
+		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+	}
 
 }
 
@@ -92,18 +117,6 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 	);
 
 	FVector LineTraceEnd = playerViewPointLocation + playerViewPointRotation.Vector() * Reach;
-
-	///// Draw a red trace to visualize
-	//DrawDebugLine(
-	//	GetWorld(),
-	//	playerViewPointLocation,
-	//	LineTraceEnd,
-	//	FColor(255, 0, 0),
-	//	false,
-	//	0.f,
-	//	0.f,
-	//	10.f
-	//);
 
 	/// set up query parameters
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
@@ -124,5 +137,5 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 		UE_LOG(LogTemp, Warning, TEXT("Line Trace hit: %s"), *(actorHit->GetName()))
 	}
 
-	return FHitResult();
+	return lineTraceHit;
 }
